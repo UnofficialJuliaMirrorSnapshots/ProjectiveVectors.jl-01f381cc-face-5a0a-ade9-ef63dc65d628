@@ -4,14 +4,17 @@ Data structure for elements projective space as well as in in products of projec
 ```@docs
 PVector
 ```
-## Informations
+## Informations and manipulations
 
 ```@docs
 dims
 homvars
 dimension_indices
 dimension_indices_homvars
-
+components
+component
+combine
+×(v::PVector, w::PVector...)
 ```
 ## Conversion between affine and projective space
 ```@docs
@@ -30,4 +33,5 @@ normalize(::PVector)
 dot(v::PVector{T, N}, w::PVector{T2, N}) where {T, T2, N}
 rmul!(z::PVector{T, 1}, λ::Number) where {T}
 fubini_study
+isreal(v::PVector, tol::Real)
 ```

@@ -17,6 +17,11 @@ end
         @test x isa PVector{Int, 3}
         @test dims(x) == (2, 2, 1)
         @test PVector([1, 2, 3], [4, 5, 6], [7, 8]) == x
+
+        # broadcasting
+        @test x .+ 2 == PVector([1, 2, 3, 4, 5, 6, 7, 8] .+ 2, (2, 2, 1))
+        @test complex.(x) isa PVector{Complex{Int64}, 3}
+        @test dims(x) == (2,2,1)
     end
 
     @testset "embed" begin
@@ -37,12 +42,12 @@ end
 
     @testset "Show" begin
         z = PVector([2, 3, 4, 5, 6, 7])
-        @test sprint(show, z) == "PVector{Int64, 1}:\n [2, 3, 4, 5, 6, 7]"
-        @test sprint(show, z, context=:compact => true) == "[2, 3, 4, 5, 6, 7]"
+        @test sprint(show, z) == "[2 : 3 : 4 : 5 : 6 : 7]"
+        @test sprint(show, z, context=:compact => true) == "[2 : 3 : 4 : 5 : 6 : 7]"
 
         z = embed([2, 3, 4, 5, 6, 7], (2, 3, 1))
-        @test sprint(show, z) == "PVector{Int64, 3}:\n [2, 3, 1] × [4, 5, 6, 1] × [7, 1]"
-        @test sprint(show, z, context=:compact => true) == "[2, 3, 1] × [4, 5, 6, 1] × [7, 1]"
+        @test sprint(show, z) == "[2 : 3 : 1] × [4 : 5 : 6 : 1] × [7 : 1]"
+        @test sprint(show, z, context=:compact => true) == "[2 : 3 : 1] × [4 : 5 : 6 : 1] × [7 : 1]"
     end
 
     @testset "Equality" begin
@@ -104,6 +109,24 @@ end
         @test abs.(dot(z, z)) ≈ (1.0,)
         z = embed(rand(ComplexF64, 6), (2, 4), normalize=true)
         @test abs.(dot(z, z)) ≈ (1.0, 1.0)
-        @test fubini_study(z, z) ≈ (0.0, 0.0)
+        @test fubini_study(z, z) ≈ 0.0
+    end
+
+    @testset "Componentes" begin
+        v = PVector([1,2,3])
+        w = PVector([4, 5])
+
+        @test combine(v, w) == PVector([1,2,3], [4, 5])
+        @test v × w == PVector([1,2,3], [4, 5])
+        @test v × w × v == combine(v, w, v) == PVector([1,2,3], [4, 5], [1, 2, 3])
+
+        a, b, c = components(v × w × v)
+        @test a == c == v
+        @test b == w
+
+        @test component(v × w × v, 2) == w
+        @test component(v × w × v, 3) == v
+        @test (v × w × v)[2,:] == w
+        @test (v × w × v)[3,:] == v
     end
 end
